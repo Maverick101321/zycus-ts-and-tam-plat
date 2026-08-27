@@ -61,5 +61,4 @@ dist/
 *.sqlite3
 *.db
 
-# Local assignment brief (not part of the published starter dataset)
-intern_task_round__3_.pdf
+
