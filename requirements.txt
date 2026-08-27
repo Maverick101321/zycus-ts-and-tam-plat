@@ -1,0 +1,11 @@
+# Web Framework & Server
+fastapi
+uvicorn
+pydantic
+python-dotenv
+requests
+
+# Testing
+pytest
+
+# Note: LLM provider SDK (e.g., openai, google-genai, anthropic) will be added once provider is chosen.

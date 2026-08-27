@@ -117,3 +117,41 @@ Candidates should use these docs as the retrieval corpus for knowledge-base look
 
 ---
 
+## Project Setup
+
+### 1. Create and Activate Virtual Environment
+
+```bash
+# Using python3 venv
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment Variables
+
+```bash
+cp .env.example .env
+# Edit .env with your LLM provider credentials and configuration
+```
+
+### 4. Run the API Server
+
+```bash
+# Using uvicorn CLI
+uvicorn app.api.main:app --reload
+
+# Or directly running the module
+python -m app.api.main
+```
+
+The API will be available at `http://localhost:8000` (interactive documentation at `http://localhost:8000/docs`).
+
+---
+
+## Design Note
