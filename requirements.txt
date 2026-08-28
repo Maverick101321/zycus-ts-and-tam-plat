@@ -5,7 +5,11 @@ pydantic
 python-dotenv
 requests
 
+# Retrieval & ML
+scikit-learn
+
 # Testing
 pytest
+httpx
 
 # Note: LLM provider SDK (e.g., openai, google-genai, anthropic) will be added once provider is chosen.

@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, APIRouter
+from app.api.routers.triage import router as triage_router
 
 app = FastAPI(
     title="Support & TAM AI Tooling Suite",
@@ -7,8 +8,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Empty routers for triage, tam, and retrieval modules
-triage_router = APIRouter(prefix="/triage", tags=["Triage"])
+# Empty routers for tam and retrieval modules (to be implemented in subsequent tasks)
 tam_router = APIRouter(prefix="/tam", tags=["TAM"])
 retrieval_router = APIRouter(prefix="/retrieval", tags=["Retrieval"])
 

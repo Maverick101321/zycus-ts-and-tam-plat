@@ -10,6 +10,9 @@ LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "")
 LLM_MODEL: str = os.getenv("LLM_MODEL", "")
 LLM_API_KEY: str = os.getenv("LLM_API_KEY", "")
 
+GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+
 _raw_models = os.getenv(
     "OPENROUTER_MODELS",
     "nvidia/nemotron-3-ultra-550b-a55b:free,z-ai/glm-5.2:free",
@@ -27,4 +30,3 @@ try:
     DEFAULT_SEED: int = int(_raw_seed)
 except ValueError:
     DEFAULT_SEED = 42
-
