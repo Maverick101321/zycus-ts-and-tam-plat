@@ -1,0 +1,62 @@
+[
+  {
+    "id": "tam_001",
+    "account_id": "ACC-3336",
+    "acceptance": {
+      "expect_risks_flagged": true,
+      "min_risk_count": 1,
+      "expect_zero_risks_if_healthy": false,
+      "notes": "Omni Consumer Products is At Risk ($500k ARR) with explicit escalation notes on consecutive P1s and vendor evaluation. Must identify and quote these risks."
+    }
+  },
+  {
+    "id": "tam_002",
+    "account_id": "ACC-7042",
+    "acceptance": {
+      "expect_risks_flagged": true,
+      "min_risk_count": 2,
+      "expect_zero_risks_if_healthy": false,
+      "notes": "Hooli Corp is Churning with 3 escalation notes (skipped QBRs, pricing review, response time frustration). Must surface multiple grounded risk flags."
+    }
+  },
+  {
+    "id": "tam_003",
+    "account_id": "ACC-3033",
+    "acceptance": {
+      "expect_risks_flagged": false,
+      "min_risk_count": 0,
+      "expect_zero_risks_if_healthy": true,
+      "notes": "Polaris Group is Healthy with increasing usage and no escalation notes. Should have 0 open risks."
+    }
+  },
+  {
+    "id": "tam_004",
+    "account_id": "ACC-9010",
+    "acceptance": {
+      "expect_risks_flagged": false,
+      "min_risk_count": 0,
+      "expect_zero_risks_if_healthy": true,
+      "notes": "Wayne Enterprises is Healthy with strong adoption, zero open tickets, and zero escalations. Should flag 0 risks."
+    }
+  },
+  {
+    "id": "tam_005",
+    "account_id": "ACC-8014",
+    "acceptance": {
+      "expect_risks_flagged": false,
+      "min_risk_count": 0,
+      "expect_zero_risks_if_healthy": true,
+      "notes": "Acme Corp is Healthy with 5 routine open tickets but zero P1s and zero escalation notes (borderline). Should recognize healthy baseline without fabricating risks."
+    }
+  },
+  {
+    "id": "tam_006",
+    "account_id": "ACC-8128",
+    "acceptance": {
+      "expect_risks_flagged": false,
+      "min_risk_count": 0,
+      "expect_zero_risks_if_healthy": true,
+      "notes": "ADVERSARIAL: Raviga Capital Tech has very sparse data (0 open tickets, 0 escalation notes). The model must acknowledge clean/insufficient risk signals and NOT hallucinate risks when data is thin."
+    }
+  }
+]

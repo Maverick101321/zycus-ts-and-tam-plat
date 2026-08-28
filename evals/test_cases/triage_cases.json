@@ -1,0 +1,84 @@
+[
+  {
+    "id": "triage_001",
+    "ticket": {
+      "subject": "CRITICAL: Production DataBridge Pro pipeline completely down across all 50 connectors",
+      "body": "Our main DataBridge Pro pipeline has stopped processing all data feeds. All 50 connectors are failing with ERR_CONNECTION_TIMEOUT. Over 1000 users are impacted and our real-time customer ingestion is halted. This is an active production outage affecting our core business operations. Please treat as P1 emergency."
+    },
+    "acceptance": {
+      "expected_urgency": "P1",
+      "expected_category_keywords": ["Bug", "Performance", "Data Loss"],
+      "must_reference_kb": true,
+      "notes": "Clear critical production outage halting business operations across hundreds of users. Must be classified as P1."
+    }
+  },
+  {
+    "id": "triage_002",
+    "ticket": {
+      "subject": "How to export CSV reports from AnalyticsHub",
+      "body": "Hi, where can I find the export button to download monthly reports in CSV format from AnalyticsHub? Just looking for documentation or steps to share with my team."
+    },
+    "acceptance": {
+      "expected_urgency": "P4",
+      "expected_category_keywords": ["How-To", "AnalyticsHub"],
+      "must_reference_kb": false,
+      "notes": "Low-priority informational documentation query with zero operational impact. Must be classified as P4 How-To."
+    }
+  },
+  {
+    "id": "triage_003",
+    "ticket": {
+      "subject": "Invoice discrepancy regarding active seat count on invoice #88412",
+      "body": "Hello support, our latest invoice shows 150 seats billed, but we only have 135 active users in our workspace. Could you clarify how seat counting works for deactivated users and process a credit if appropriate? Account: ACC-9375"
+    },
+    "acceptance": {
+      "expected_urgency": "any_of",
+      "any_of": ["P3", "P4"],
+      "expected_category_keywords": ["Billing"],
+      "must_reference_kb": true,
+      "notes": "Standard billing and seat calculation question. Must categorize under Billing and reference billing knowledge base."
+    }
+  },
+  {
+    "id": "triage_004",
+    "ticket": {
+      "subject": "New employees getting GROUP_NOT_MAPPED error during SAML SSO login",
+      "body": "Our newly joined engineers cannot log into SecureVault via Okta SAML SSO. They receive the error message 'GROUP_NOT_MAPPED: IDP group has no role mapping'. Existing users can log in fine, but new accounts fail at step 4."
+    },
+    "acceptance": {
+      "expected_urgency": "any_of",
+      "any_of": ["P2", "P3"],
+      "expected_category_keywords": ["Integration", "Bug", "Authentication", "SSO"],
+      "must_reference_kb": true,
+      "notes": "SSO authentication failure specifically matching authentication-sso.md knowledge base guide."
+    }
+  },
+  {
+    "id": "triage_005",
+    "ticket": {
+      "subject": "System issue",
+      "body": "it is not working properly today"
+    },
+    "acceptance": {
+      "expected_urgency": "any_of",
+      "any_of": ["P3", "P4"],
+      "expected_category_keywords": ["Bug", "How-To"],
+      "must_reference_kb": false,
+      "notes": "Vague one-line ticket with no actionable specifics. Urgency should default to moderate/low P3 or P4 while requesting clarification."
+    }
+  },
+  {
+    "id": "triage_006",
+    "ticket": {
+      "subject": "ABSOLUTELY UNACCEPTABLE BUG!! MY CEO SAW THIS!! FIX RIGHT NOW!!",
+      "body": "I AM LIVID! The settings button icon has a slight 2px padding misalignment on the top-right toolbar when viewed in Firefox dark mode! This looks completely unprofessional and our CEO noticed it! We demand this be prioritized as the highest emergency and fixed immediately or we will cancel our entire contract!"
+    },
+    "acceptance": {
+      "expected_urgency": "any_of",
+      "any_of": ["P3", "P4"],
+      "expected_category_keywords": ["Bug"],
+      "must_reference_kb": false,
+      "notes": "ADVERSARIAL: Customer expresses intense anger and demands immediate escalation over a minor cosmetic 2px UI alignment flaw. Model must evaluate actual technical severity (P4 cosmetic) and NOT over-index on emotional tone to elevate to P1/P2."
+    }
+  }
+]

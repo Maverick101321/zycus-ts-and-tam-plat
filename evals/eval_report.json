@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-08-28T13:42:16.535129+00:00",
+  "total_cases": 12,
+  "total_passed": 12,
+  "overall_pass_rate": 100.0,
+  "triage": {
+    "cases": 6,
+    "evaluated": 6,
+    "pass_rate": 100.0,
+    "average_score": 0.95
+  },
+  "tam": {
+    "cases": 6,
+    "evaluated": 6,
+    "pass_rate": 100.0,
+    "average_score": 0.88
+  },
+  "results": [
+    {
+      "case_id": "triage_001",
+      "task": "Triage",
+      "passed": true,
+      "score": 1.0,
+      "details": "Urgency 'P1' matched 'P1'; Category matched keywords: ['Bug']; KB doc referenced: 'knowledge-base/products/databridge-pro.md (Section: DataBridge Pro \u2014 Product Reference > Core Modules > API)'"
+    },
+    {
+      "case_id": "triage_002",
+      "task": "Triage",
+      "passed": true,
+      "score": 1.0,
+      "details": "Urgency 'P4' matched 'P4'; Category matched keywords: ['How-To', 'AnalyticsHub']; Optional KB doc referenced: 'knowledge-base/products/analyticshub.md'"
+    },
+    {
+      "case_id": "triage_003",
+      "task": "Triage",
+      "passed": true,
+      "score": 1.0,
+      "details": "Urgency 'P3' in allowed ['P3', 'P4']; Category matched keywords: ['Billing']; KB doc referenced: 'knowledge-base/billing/billing-and-plans.md'"
+    },
+    {
+      "case_id": "triage_004",
+      "task": "Triage",
+      "passed": true,
+      "score": 1.0,
+      "details": "Urgency 'P3' in allowed ['P2', 'P3']; Category matched keywords: ['Integration', 'Authentication', 'SSO']; KB doc referenced: 'knowledge-base/troubleshooting/authentication-sso.md'"
+    },
+    {
+      "case_id": "triage_005",
+      "task": "Triage",
+      "passed": true,
+      "score": 0.7,
+      "details": "Urgency 'P4' in allowed ['P3', 'P4']; Category 'Performance'/'Platform > General' missing keywords ['Bug', 'How-To']; Optional KB doc referenced: 'knowledge-base/troubleshooting/performance-and-integrations.md'"
+    },
+    {
+      "case_id": "triage_006",
+      "task": "Triage",
+      "passed": true,
+      "score": 1.0,
+      "details": "Urgency 'P4' in allowed ['P3', 'P4']; Category matched keywords: ['Bug']"
+    },
+    {
+      "case_id": "tam_001",
+      "task": "TAM Brief",
+      "passed": true,
+      "score": 0.75,
+      "details": "Flagged 3 risks (min required: 1); Judge Grounding: 0.50"
+    },
+    {
+      "case_id": "tam_002",
+      "task": "TAM Brief",
+      "passed": true,
+      "score": 1.0,
+      "details": "Flagged 3 risks (min required: 2); Judge Grounding: 1.00"
+    },
+    {
+      "case_id": "tam_003",
+      "task": "TAM Brief",
+      "passed": true,
+      "score": 0.75,
+      "details": "Correctly flagged 0 risks for healthy/sparse account; Judge Grounding: 0.50"
+    },
+    {
+      "case_id": "tam_004",
+      "task": "TAM Brief",
+      "passed": true,
+      "score": 1.0,
+      "details": "Correctly flagged 0 risks for healthy/sparse account; Judge Grounding: 1.00"
+    },
+    {
+      "case_id": "tam_005",
+      "task": "TAM Brief",
+      "passed": true,
+      "score": 0.75,
+      "details": "Correctly flagged 0 risks for healthy/sparse account; Judge Grounding: 0.50"
+    },
+    {
+      "case_id": "tam_006",
+      "task": "TAM Brief",
+      "passed": true,
+      "score": 1.0,
+      "details": "Correctly flagged 0 risks for healthy/sparse account; Judge Grounding: 1.00"
+    }
+  ]
+}
