@@ -1,6 +1,8 @@
+import json
 import logging
+import sys
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 import requests
 
 from app import config
@@ -23,6 +25,17 @@ class LLMClient(ABC):
         """Generate a text response from the LLM given a prompt and optional configuration."""
         raise NotImplementedError
 
+    @abstractmethod
+    def generate_stream(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        temperature: Optional[float] = None,
+        seed: Optional[int] = None,
+    ) -> Iterator[str]:
+        """Generate a streaming text response from the LLM."""
+        raise NotImplementedError
+
 
 class NotImplementedProvider(LLMClient):
     """Stub provider that alerts the user to configure an LLM provider."""
@@ -41,6 +54,18 @@ class NotImplementedProvider(LLMClient):
         seed: Optional[int] = None,
         json_mode: bool = False,
     ) -> str:
+        raise NotImplementedError(
+            f"LLM Provider '{self.provider_name}' is not configured or not implemented. "
+            "Please configure a valid provider and credentials in your .env file."
+        )
+
+    def generate_stream(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        temperature: Optional[float] = None,
+        seed: Optional[int] = None,
+    ) -> Iterator[str]:
         raise NotImplementedError(
             f"LLM Provider '{self.provider_name}' is not configured or not implemented. "
             "Please configure a valid provider and credentials in your .env file."
@@ -69,14 +94,15 @@ class OpenRouterClient(LLMClient):
     def __repr__(self) -> str:
         return f"OpenRouterClient(model={self.model!r})"
 
-    def generate(
+    def _build_payload(
         self,
         prompt: str,
         system: Optional[str] = None,
         temperature: Optional[float] = None,
         seed: Optional[int] = None,
         json_mode: bool = False,
-    ) -> str:
+        stream: bool = False,
+    ) -> tuple[Dict[str, str], Dict[str, Any]]:
         if not self.api_key:
             raise ValueError(
                 "OpenRouter API key is missing. Please set LLM_API_KEY in your .env file."
@@ -113,6 +139,28 @@ class OpenRouterClient(LLMClient):
         if json_mode:
             payload["response_format"] = {"type": "json_object"}
 
+        if stream:
+            payload["stream"] = True
+
+        return headers, payload
+
+    def generate(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        temperature: Optional[float] = None,
+        seed: Optional[int] = None,
+        json_mode: bool = False,
+    ) -> str:
+        headers, payload = self._build_payload(
+            prompt=prompt,
+            system=system,
+            temperature=temperature,
+            seed=seed,
+            json_mode=json_mode,
+            stream=False,
+        )
+
         response = requests.post(
             self.OPENROUTER_URL,
             headers=headers,
@@ -135,6 +183,53 @@ class OpenRouterClient(LLMClient):
 
         return content
 
+    def generate_stream(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        temperature: Optional[float] = None,
+        seed: Optional[int] = None,
+    ) -> Iterator[str]:
+        headers, payload = self._build_payload(
+            prompt=prompt,
+            system=system,
+            temperature=temperature,
+            seed=seed,
+            json_mode=False,
+            stream=True,
+        )
+
+        response = requests.post(
+            self.OPENROUTER_URL,
+            headers=headers,
+            json=payload,
+            stream=True,
+            timeout=self.timeout,
+        )
+        if not response.ok:
+            raise RuntimeError(
+                f"OpenRouter API error ({response.status_code}): {response.text}"
+            )
+
+        for line in response.iter_lines():
+            if not line:
+                continue
+            decoded = line.decode("utf-8") if isinstance(line, bytes) else line
+            if decoded.startswith("data: "):
+                data_str = decoded[6:].strip()
+                if data_str == "[DONE]":
+                    break
+                try:
+                    chunk = json.loads(data_str)
+                    choices = chunk.get("choices", [])
+                    if choices:
+                        delta = choices[0].get("delta", {})
+                        content = delta.get("content")
+                        if content:
+                            yield content
+                except json.JSONDecodeError:
+                    continue
+
 
 class GroqClient(LLMClient):
     """Concrete LLM client for Groq API."""
@@ -154,14 +249,15 @@ class GroqClient(LLMClient):
     def __repr__(self) -> str:
         return f"GroqClient(model={self.model!r})"
 
-    def generate(
+    def _build_payload(
         self,
         prompt: str,
         system: Optional[str] = None,
         temperature: Optional[float] = None,
         seed: Optional[int] = None,
         json_mode: bool = False,
-    ) -> str:
+        stream: bool = False,
+    ) -> tuple[Dict[str, str], Dict[str, Any]]:
         if not self.api_key:
             raise ValueError(
                 "Groq API key is missing. Please set GROQ_API_KEY in your .env file."
@@ -196,6 +292,28 @@ class GroqClient(LLMClient):
         if json_mode:
             payload["response_format"] = {"type": "json_object"}
 
+        if stream:
+            payload["stream"] = True
+
+        return headers, payload
+
+    def generate(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        temperature: Optional[float] = None,
+        seed: Optional[int] = None,
+        json_mode: bool = False,
+    ) -> str:
+        headers, payload = self._build_payload(
+            prompt=prompt,
+            system=system,
+            temperature=temperature,
+            seed=seed,
+            json_mode=json_mode,
+            stream=False,
+        )
+
         response = requests.post(
             self.GROQ_URL,
             headers=headers,
@@ -217,6 +335,58 @@ class GroqClient(LLMClient):
             raise ValueError(f"Empty or missing message content in Groq response: {data}")
 
         return content
+
+    def generate_stream(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        temperature: Optional[float] = None,
+        seed: Optional[int] = None,
+    ) -> Iterator[str]:
+        headers, payload = self._build_payload(
+            prompt=prompt,
+            system=system,
+            temperature=temperature,
+            seed=seed,
+            json_mode=False,
+            stream=True,
+        )
+
+        sys.stderr.write(f"Starting stream request to Groq (model={self.model})...\n")
+        sys.stderr.flush()
+
+        response = requests.post(
+            self.GROQ_URL,
+            headers=headers,
+            json=payload,
+            stream=True,
+            timeout=self.timeout,
+        )
+        if not response.ok:
+            raise RuntimeError(
+                f"Groq API error ({response.status_code}): {response.text}"
+            )
+
+        for line in response.iter_lines():
+            if not line:
+                continue
+            decoded = line.decode("utf-8") if isinstance(line, bytes) else line
+            if decoded.startswith("data: "):
+                data_str = decoded[6:].strip()
+                if data_str == "[DONE]":
+                    break
+                try:
+                    chunk = json.loads(data_str)
+                    choices = chunk.get("choices", [])
+                    if choices:
+                        delta = choices[0].get("delta", {})
+                        content = delta.get("content")
+                        if content:
+                            sys.stderr.write(f"Yielded chunk: {content[:20]!r}\n")
+                            sys.stderr.flush()
+                            yield content
+                except json.JSONDecodeError:
+                    continue
 
 
 class FallbackLLMClient(LLMClient):
@@ -264,6 +434,45 @@ class FallbackLLMClient(LLMClient):
 
         raise RuntimeError(
             f"All attempted clients {attempted_clients} failed. Last error: {last_error}"
+        ) from last_error
+
+    def generate_stream(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        temperature: Optional[float] = None,
+        seed: Optional[int] = None,
+    ) -> Iterator[str]:
+        last_error: Optional[Exception] = None
+        attempted_clients: List[str] = []
+
+        for client in self.clients:
+            client_repr = repr(client)
+            attempted_clients.append(client_repr)
+            try:
+                gen = client.generate_stream(
+                    prompt=prompt,
+                    system=system,
+                    temperature=temperature,
+                    seed=seed,
+                )
+                yielded_any = False
+                for chunk in gen:
+                    yielded_any = True
+                    yield chunk
+                return
+            except Exception as exc:
+                if yielded_any:
+                    raise exc
+                last_error = exc
+                logger.warning(
+                    "Client %s failed before yielding during stream: %s. Retrying with next client in fallback chain...",
+                    client_repr,
+                    exc,
+                )
+
+        raise RuntimeError(
+            f"All attempted clients {attempted_clients} failed during stream initialization. Last error: {last_error}"
         ) from last_error
 
 

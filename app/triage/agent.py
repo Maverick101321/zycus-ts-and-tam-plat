@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from app import config
 from app.llm_client import get_llm_client
@@ -105,3 +105,42 @@ def triage_ticket(ticket: TicketInput) -> TriageOutput:
                 )
 
     return triage_result
+
+
+def stream_draft_response(ticket: TicketInput, classification: TriageOutput) -> Iterator[str]:
+    """Stream a polished customer-facing draft response given the ticket and triage classification."""
+    client = get_llm_client()
+    system_prompt = (
+        "You are an empathetic, professional Tier 2 support engineer. "
+        "Write a concise, helpful, and empathetic initial response to the customer based on the ticket details "
+        "and internal triage classification. Include immediate troubleshooting steps or next steps if applicable."
+    )
+    user_prompt = f"""### TICKET:
+Subject: {ticket.subject}
+Body:
+{ticket.body}
+
+### CLASSIFICATION & CONTEXT:
+Product Area: {classification.product_area}
+Category: {classification.category}
+Urgency: {classification.urgency}
+Reasoning: {classification.reasoning}
+Matched KB Guide: {classification.matched_kb_doc or 'None'}
+KB Guidance: {classification.matched_kb_snippet or 'None'}
+Assigned Team: {classification.recommended_team}
+
+Write ONLY the customer-facing email/message response."""
+
+    return client.generate_stream(
+        prompt=user_prompt,
+        system=system_prompt,
+        temperature=config.DEFAULT_TEMPERATURE,
+        seed=config.DEFAULT_SEED,
+    )
+
+
+def triage_ticket_stream(ticket: TicketInput) -> Iterator[str]:
+    """Helper that computes ticket classification and streams the draft response text."""
+    classification = triage_ticket(ticket)
+    return stream_draft_response(ticket, classification)
+

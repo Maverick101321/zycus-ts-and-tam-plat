@@ -154,4 +154,46 @@ The API will be available at `http://localhost:8000` (interactive documentation 
 
 ---
 
+## UI Demo
+
+Launch the interactive Streamlit application to test ticket triage and TAM account health briefs with live streaming responses:
+
+```bash
+streamlit run ui/streamlit_app.py
+```
+
+---
+
+## CI
+
+Evaluation test suites run automatically on push to `main` and on pull requests targeting `main` via GitHub Actions (`.github/workflows/eval-ci.yml`). Evaluation reports (`eval_report.md` and `eval_report.json`) are uploaded and available as workflow artifacts on every run.
+
+> **Note**: Requires `LLM_API_KEY`, `GROQ_API_KEY`, etc. to be set as GitHub repo secrets (**Settings → Secrets and variables → Actions**) for CI to run evals against live models.
+
+---
+
 ## Design Note
+
+#### Failure modes
+
+1. **Malformed/non-JSON LLM output.** Both agents depend on the model returning strict JSON; a truncated or chatty response breaks downstream parsing. Mitigation: a retry-with-stricter-reminder pass on parse failure (already implemented in `agent.py` for both tasks). Detection in production: track a parse-failure-rate metric per model; alert if it crosses a threshold, since it usually signals a prompt or model regression.
+
+2. **Hallucinated risk flags in the TAM brief.** An LLM can invent a plausible-sounding "quote" that never appeared in the account data, which is dangerous for a churn-risk tool. Mitigation: a post-processing verification step drops any `RiskFlag` whose quote isn't a substring match (case/whitespace-normalized) of the actual ticket body or `escalation_notes` — implemented, not optional. Detection: log every dropped flag; a high drop rate signals the model is fabricating rather than extracting, worth a prompt revision.
+
+3. **Free-tier LLM provider outages/rate limits.** Nemotron/GLM on OpenRouter and gpt-oss-120b on Groq all hit 429/502s under load, as seen during testing. Mitigation: a cross-provider fallback chain (`FallbackLLMClient`) tries three independent providers before failing. Detection: log which provider actually served each request; a rising fallback-to-tertiary rate is an early warning to move to a paid tier before it becomes a hard outage.
+
+#### Latency vs quality trade-off
+
+The primary model, Nemotron 3 Ultra (550B), was deliberately chosen over faster small models because triage reasoning and churn-risk grounding both benefit from stronger multi-step reasoning — misclassifying a P1 as P4, or fabricating a risk quote, is costlier than a few extra seconds of latency. This costs real time: multi-second responses per ticket, and occasional multi-second fallback delays when the primary is overloaded.
+
+If latency were the hard constraint, the swap would be: make Groq's gpt-oss-120b (fast inference hardware) the primary instead of a fallback, drop to a smaller/faster model for lower-stakes triage tickets (e.g., P3/P4 pre-classified by simple heuristics), cache KB retrieval results per query pattern, and shrink the KB context passed into the prompt (top-1 chunk instead of top-3).
+
+#### Data sensitivity
+
+Ticket bodies and account data can contain names, emails, and business-sensitive details (ARR, escalation notes). Current design already avoids the worst risk — everything is synthetic mock data, and no data leaves the pipeline except to the configured LLM API. For a real production version: (1) add a PII-redaction pass (regex/NER for emails, phone numbers, names) before any text is sent to an external LLM API; (2) use providers with zero-data-retention agreements or self-hosted inference for sensitive tiers; (3) never log raw prompts/responses containing customer data — log redacted versions or hashes only; (4) apply RBAC on which accounts a given TAM/agent identity can query.
+
+#### Scaling to 10x ticket volume
+
+At 10x volume (~5,000 tickets/day), the first thing to break is the LLM provider's free-tier rate limits — the fallback chain would be exhausted within minutes, not just occasionally triggered. Second: the current design calls the LLM synchronously inside the FastAPI request path, so request queuing and latency would spike badly under concurrent load. Third: the in-memory TF-IDF KB index rebuilds/holds fine at this scale, but wouldn't scale further if the KB itself grew 10x.
+
+Fixes, in priority order: move to a paid/dedicated LLM tier with real throughput guarantees; make ticket triage asynchronous (queue + worker pool, e.g. Celery/RQ, with the API returning a job ID); add response caching for near-duplicate tickets; and if the KB grows significantly, move from TF-IDF to a proper vector store (e.g., pgvector/FAISS) instead of the in-memory approach.
